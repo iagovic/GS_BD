@@ -77,9 +77,32 @@ DELETE FROM AbrigoPessoa WHERE id_abrigo = p_id_abrigo AND id_pessoa = p_id_pess
 /
 
 -- ManutencaoEstacao
-CREATE OR REPLACE PROCEDURE inserir_manutencao (p_id_manutencao INT, p_id_estacao INT, p_data_manutencao DATE, p_descricao VARCHAR2, p_status VARCHAR2) AS BEGIN
-INSERT INTO ManutencaoEstacao (id_manutencao, id_estacao, data_manutencao, descricao, status) VALUES (p_id_manutencao, p_id_estacao, p_data_manutencao, p_descricao, p_status); END;
+CREATE OR REPLACE PROCEDURE inserir_manutencao (
+    p_id_estacao INT, 
+    p_data_manutencao DATE, 
+    p_descricao VARCHAR2, 
+    p_status VARCHAR2
+) AS 
+    p_id_manutencao INT;  -- Variável para armazenar o ID gerado
+BEGIN
+    -- Verificar se o status é válido
+    IF p_status NOT IN ('Pendente','Concluida','Em andamento') THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Status inválido. Os valores permitidos são: Pendente, Concluída, Em andamento');
+    END IF;
+
+    -- Gerar id_manutencao automaticamente usando a sequência
+    SELECT seq_manutencao.NEXTVAL INTO p_id_manutencao FROM dual;
+
+    -- Inserir dados na tabela ManutencaoEstacao
+    INSERT INTO ManutencaoEstacao (id_manutencao, id_estacao, data_manutencao, descricao, status) 
+    VALUES (p_id_manutencao, p_id_estacao, p_data_manutencao, p_descricao, p_status);
+    
+    -- Confirmação de sucesso (opcional)
+    DBMS_OUTPUT.PUT_LINE('Dados inseridos com sucesso! ID: ' || p_id_manutencao);
+END;
 /
+
+
 
 CREATE OR REPLACE PROCEDURE atualizar_manutencao (p_id_manutencao INT, p_id_estacao INT, p_data_manutencao DATE, p_descricao VARCHAR2, p_status VARCHAR2) AS BEGIN
 UPDATE ManutencaoEstacao SET id_estacao = p_id_estacao, data_manutencao = p_data_manutencao, descricao = p_descricao, status = p_status WHERE id_manutencao = p_id_manutencao; END;
